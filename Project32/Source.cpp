@@ -1,5 +1,68 @@
 #include <iostream>
 using namespace std;
+class point {
+	int x;
+	int y;
+public:
+	point() {
+		x = 0;
+		y = 0;
+	}
+	point(int a, int b) {
+		x = a;
+		y = b;
+	}
+	point& operator + (point& obj) {
+		x += obj.x;
+		y += obj.y;
+		return *this;
+	}
+	point& operator - (point& obj) {
+		x -= obj.x;
+		y -= obj.y;
+		return *this;
+	}
+	point& operator * (point& obj) {
+		x *= obj.x;
+		y *= obj.y;
+		return *this;
+	}
+	point& operator / (point& obj) {
+		x /= obj.x;
+		y /= obj.y;
+		return *this;
+	}
+	point& operator += (point& obj) {
+		x += obj.x;
+		y += obj.y;
+		return *this;
+	}
+	point& operator -= (point& obj) {
+		x -= obj.x;
+		y -= obj.y;
+		return *this;
+	}
+	point& operator *= (point& obj) {
+		x *= obj.x;
+		y *= obj.y;
+		return *this;
+	}
+	point& operator /= (point& obj) {
+		x /= obj.x;
+		y /= obj.y;
+		return *this;
+	}
+	friend istream& operator >> (istream& is, point& obj)
+	{
+		is >> obj.x >> obj.y;
+		return is;
+	}
+	friend ostream& operator << (ostream& os, point& obj)
+	{
+		os << obj.x << " " << obj.y;
+		return os;
+	}
+};
 template<class T>
 class matrix
 {
@@ -60,8 +123,29 @@ public:
 		}
 		delete[]p;
 	}
-		matrix& operator = (const matrix& obj) {
-
+		matrix& operator = ( matrix& obj) {
+			if (p != nullptr) {
+				for (int i = 0; i < row; i++)
+				{
+					delete[] p[i];
+				}
+				delete[]p;
+			}
+			row = obj.row;
+			col = obj.col;
+			p = new T * [row];
+			for (int i = 0; i < row; i++)
+			{
+				p[i] = new T[col];
+			}
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < col; j++)
+				{
+					p[i][j] = obj.p[i][j];
+				}
+			}
+			return *this;
 	}
 	// присваивания с копированием 
 	matrix& operator = (matrix&& obj) // перегруженный оператор  
@@ -152,41 +236,54 @@ public:
 		}
 		return *this;
 	}
-	matrix operator*(matrix& obj) // умножение матриц 
+	matrix& operator*(matrix& obj) // сложение матриц 
 	{
-		if (col == obj.row) {
-			matrix temp;
-			temp.row = row;
-			temp.col = obj.col;
-			temp.p = new T * [row];
-			for (int i = 0; i < row; i++)
-				temp.p[i] = new T[obj.col];
+		if (row == obj.row && col == obj.col)
+		{
 			for (int i = 0; i < row; i++)
 			{
-				for (int k = 0; k < obj.col; k++)
+				for (int j = 0; j < col; j++)
 				{
-					int temp1 = 0;
-					for (int j = 0; j < col; j++)
-					{
-						temp1 += p[i][j] * obj.p[j][k];
-					}
-					temp.p[i][k] = temp1;
+					p[i][j] *= obj.p[i][j];
 				}
 			}
-			cout << temp;
-			return temp;
 		}
-		else {
-			matrix t = *this;
-			return t;
-		}
-		//return *this;
+		return *this;
 	}
-	T& operator()(int r, int c) // установка / получение значения  
+	matrix& operator-(matrix& obj) // сложение матриц 
+	{
+		if (row == obj.row && col == obj.col)
+		{
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < col; j++)
+				{
+					p[i][j] -= obj.p[i][j];
+				}
+			}
+		}
+		return *this;
+	}
+	matrix& operator/(matrix& obj) // сложение матриц 
+	{
+		if (row == obj.row && col == obj.col)
+		{
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < col; j++)
+				{
+					p[i][j] /= obj.p[i][j];
+				}
+			}
+		}
+		return *this;
+	}
+	T& operator()(int r, int c, point& obj) // установка / получение значения  
 	{
 		if (r >= 0 && r < row && c >= 0 && c < col) {
+			p[r][c] = obj;
 			cout << p[r][c] << endl;
-			cin >> p[r][c];
+			
 		}
 	}
 	// элемента матрицы 
@@ -200,7 +297,6 @@ public:
 			}
 			os << endl;
 		}
-		os << endl;
 		return os;
 	}
 	// печать матрицы 
@@ -225,15 +321,51 @@ public:
 			}
 		}
 	}
+	int max() {
+		int max=p[0][0];
+		for (int i = 0; i < row; i++)
+		{
+			for (int j = 0; j < col; j++)
+			{
+				if (p[i][j] > max)
+				{
+					max = p[i][j];
+				}
+			}
+		}
+		return max;
+	}
+	int min() {
+		int min = p[0][0];
+		for (int i = 0; i < row; i++)
+		{
+			for (int j = 0; j < col; j++)
+			{
+				if (p[i][j] < min)
+				{
+					min = p[i][j];
+				}
+			}
+		}
+		return min;
+	}
+	void init(int)
+	{
+		for (int i = 0; i < row; i++)
+		{
+			for (int j = 0; j < col; j++)
+			{
+				p[i][j] = point(rand() % 10, rand() % 10);
+			}
+		}
+	}
 };
 int main() {
 	srand(time(0));
-	matrix<int>obj(1, 2);
-	obj.init();
+	matrix<point>obj(1, 2);
+	obj.init(1);
 	cout << obj;
-	matrix<int>obj1(2,1);
-	obj1.init();
-	cout << obj1;
-	obj = obj * obj1;
+	matrix<point>obj1 = obj;
+	obj = obj1 + obj;
 	cout << obj;
 }
